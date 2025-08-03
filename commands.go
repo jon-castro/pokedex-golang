@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
@@ -17,11 +18,12 @@ func commandMap(config *RequestConfig) error {
 		return err
 	}
 
+	config.previousLocationUrl = &locations.Previous
+	config.nextLocationUrl = &locations.Next
+
 	for i := 0; i < len(locations.Results); i++ {
 		fmt.Println(locations.Results[i].Name)
 	}
-	config.previousLocationUrl = config.nextLocationUrl
-	config.nextLocationUrl = &locations.Next
 
 	fmt.Print("Pokedex > ")
 
@@ -30,8 +32,7 @@ func commandMap(config *RequestConfig) error {
 
 func commandMapb(config *RequestConfig) error {
 	if config.previousLocationUrl == nil {
-		fmt.Println("you're on the first page")
-		return nil
+		return errors.New("you're on the first page")
 	}
 
 	locations, err := GetLocationRequest(*config.previousLocationUrl)
@@ -39,11 +40,12 @@ func commandMapb(config *RequestConfig) error {
 		return err
 	}
 
+	config.nextLocationUrl = &locations.Next
+	config.previousLocationUrl = &locations.Previous
+
 	for i := 0; i < len(locations.Results); i++ {
 		fmt.Println(locations.Results[i].Name)
 	}
-	config.nextLocationUrl = config.previousLocationUrl
-	config.previousLocationUrl = &locations.Next
 
 	fmt.Print("Pokedex > ")
 
@@ -51,7 +53,7 @@ func commandMapb(config *RequestConfig) error {
 }
 
 func commandHelp() error {
-	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\nhelp: Displayes a help message\nexit: Exit the Podekex\n")
+	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\nhelp: Displayes a help message\nexit: Exit the Podekex\nPokedex > ")
 	return nil
 }
 
