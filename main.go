@@ -4,19 +4,33 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
-
-type cliCommand struct {
-	name        string
-	description string
-	callback    func() error
-}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	initialLocationUrl := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
+
+	requestConfig := RequestConfig{
+		previousLocationUrl: nil,
+		nextLocationUrl:     &initialLocationUrl,
+	}
+
 	commands := map[string]cliCommand{
+		"map": {
+			name:        "map",
+			description: "Display the next 20 map locations",
+			callback: func() error {
+				return commandMap(&requestConfig)
+			},
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Display the next 20 map locations",
+			callback: func() error {
+				return commandMapb(&requestConfig)
+			},
+		},
 		"help": {
 			name:        "help",
 			description: "Display the application help screen",
@@ -34,6 +48,16 @@ func main() {
 		cleanedText := cleanInput(scanner.Text())
 		if len(cleanedText) > 0 {
 			switch cleanedText[0] {
+			case "map":
+				err := commands["map"].callback()
+				if err != nil {
+					return
+				}
+			case "mapb":
+				err := commands["mapb"].callback()
+				if err != nil {
+					return
+				}
 			case "help":
 				err := commands["help"].callback()
 				if err != nil {
@@ -45,29 +69,10 @@ func main() {
 					return
 				}
 			default:
-				fmt.Println("Unknown command\nPokedex > ")
+				fmt.Print("Unknown command\nPokedex > ")
 			}
 		} else {
 			fmt.Print("Pokedex > ")
 		}
 	}
-}
-
-func cleanInput(text string) []string {
-	var finalSlice []string
-	stripedText := strings.TrimSpace(strings.ToLower(text))
-	finalSlice = strings.Fields(stripedText)
-
-	return finalSlice
-}
-
-func commandHelp() error {
-	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\nhelp: Displayes a help message\nexit: Exit the Podekex")
-	return nil
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
 }
