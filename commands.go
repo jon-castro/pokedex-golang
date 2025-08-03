@@ -1,63 +1,58 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
 
-type cliCommand struct {
-	name        string
-	description string
-	callback    func() error
-}
-
-func commandMap(config *RequestConfig) error {
-	locations, err := GetLocationRequest(*config.nextLocationUrl)
+func commandMapf(cfg *config) error {
+	locationsResp, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsURL)
 	if err != nil {
 		return err
 	}
 
-	config.previousLocationUrl = &locations.Previous
-	config.nextLocationUrl = &locations.Next
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
 
-	for i := 0; i < len(locations.Results); i++ {
-		fmt.Println(locations.Results[i].Name)
+	for _, loc := range locationsResp.Results {
+		fmt.Println(loc.Name)
 	}
-
-	fmt.Print("Pokedex > ")
-
 	return nil
 }
 
-func commandMapb(config *RequestConfig) error {
-	if *config.previousLocationUrl == "" {
-		fmt.Print("you're on the first page\nPokedex > ")
-		return nil
+func commandMapb(cfg *config) error {
+	if cfg.prevLocationsURL == nil {
+		return errors.New("you're on the first page")
 	}
 
-	locations, err := GetLocationRequest(*config.previousLocationUrl)
+	locationResp, err := cfg.pokeapiClient.ListLocations(cfg.prevLocationsURL)
 	if err != nil {
 		return err
 	}
 
-	config.nextLocationUrl = &locations.Next
-	config.previousLocationUrl = &locations.Previous
+	cfg.nextLocationsURL = locationResp.Next
+	cfg.prevLocationsURL = locationResp.Previous
 
-	for i := 0; i < len(locations.Results); i++ {
-		fmt.Println(locations.Results[i].Name)
+	for _, loc := range locationResp.Results {
+		fmt.Println(loc.Name)
 	}
-
-	fmt.Print("Pokedex > ")
-
 	return nil
 }
 
-func commandHelp() error {
-	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\nhelp: Displayes a help message\nexit: Exit the Podekex\nPokedex > ")
+func commandHelp(cfg *config) error {
+	fmt.Println()
+	fmt.Println("Welcome to the Pokedex!")
+	fmt.Println("Usage:")
+	fmt.Println()
+	for _, cmd := range getCommands() {
+		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
+	}
+	fmt.Println()
 	return nil
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
