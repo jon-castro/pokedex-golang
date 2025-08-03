@@ -17,9 +17,6 @@ func commandMap(config *RequestConfig) error {
 		return err
 	}
 
-	//TODO: DEBUG
-	fmt.Println("Locations:", locations)
-
 	for i := 0; i < len(locations.Results); i++ {
 		fmt.Println(locations.Results[i].Name)
 	}
@@ -46,7 +43,7 @@ func commandMapb(config *RequestConfig) error {
 		fmt.Println(locations.Results[i].Name)
 	}
 	config.nextLocationUrl = config.previousLocationUrl
-	config.previousLocationUrl = &locations.Previous
+	config.previousLocationUrl = &locations.Next
 
 	fmt.Print("Pokedex > ")
 
