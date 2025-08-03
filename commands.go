@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 )
@@ -31,8 +30,9 @@ func commandMap(config *RequestConfig) error {
 }
 
 func commandMapb(config *RequestConfig) error {
-	if config.previousLocationUrl == nil {
-		return errors.New("you're on the first page")
+	if *config.previousLocationUrl == "" {
+		fmt.Print("you're on the first page\nPokedex > ")
+		return nil
 	}
 
 	locations, err := GetLocationRequest(*config.previousLocationUrl)
